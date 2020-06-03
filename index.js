@@ -49,7 +49,7 @@ client.on('guildMemberRemove', member => {
   channel.send(aufwiedersehensembed)
 });
 
-client.on('message', message => {
+client.on('message', async message => {
   
   let args = message.content.substring(PREFIX.length).split(" ");
   
@@ -59,6 +59,50 @@ client.on('message', message => {
       message.channel.send('Bestanden!');
     break;
       
+    case 'ping':
+      let pingMessage = await message.channel.send('Am pingen...');
+      
+      pingMessage.edit(`Der Ping liegt zurzeit bei ${pingMessage.createdTimestamp - message.createdTimestamp} ms`)
+    break;
+      
+    case 'say':
+      let channel = message.mentions.channels.first();
+      
+      if(!channel) {
+        message.delete();
+        message.channel.send(args.slice(1).join(" "))
+        //message.channel.send(`args.slice(1).join(" ")\n\n~ ${message.member.tag}`)
+      }
+      channel.send(args.slice(2).join(" "))
+      //message.channel.send(`args.slice(2).join(" ")\n\n~ ${message.member.tag}`)
+      message.delete()
+    break;
+      
+    case 'clear':
+      try{
+      if(!message.member.hasPermission(["MANAGE_MESSAGES"])) {
+        message.member.send('Du hast keine Berechtigung, diesen Command zu nutzen!')
+        message.delete()
+        return;
+      } else if(message.member.hasPermission(["MANAGE_MESSAGES"])) {
+        let max = 100;
+        
+        if(args[1] && parseInt(args[1]) <= 100){
+          max = parseInt(args[1])
+        }
+        
+        await message.delete()
+        message.channel.bulkDelete(max, true)
+       
+        .then((messages) => {
+          message.channel.send('Gelöschte Nachrichten: ' + max)
+        })
+      } 
+      } catch(err) {
+        console.error(err)
+      }
+      
+    break;      
   };
 });
 
